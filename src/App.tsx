@@ -31,7 +31,7 @@ function App() {
 
     try {
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: {
@@ -45,13 +45,13 @@ function App() {
                     text: `Sen yaşlı bireylere yardımcı olan bir sağlık asistanısın. Aşağıdaki ilaç prospektüsünü yaşlı bireyler için sadeleştir ve anlaşılır hale getir. Yanıtını şu formatta ver:
 
 NASIL KULLANILIR:
-[Basit, net talimatlar. Günde kaç kez, ne zaman, yemekle mi açken mi gibi]
+[Basit, net talimatlar. Günde kaç kez, ne zaman, yemekle mi açken mi gibi. Her maddeyi ayrı satırda yaz.]
 
 DİKKAT EDİLECEKLER:
-[Önemli uyarılar, kişinin dikkat etmesi gerekenler]
+[Önemli uyarılar, kişinin dikkat etmesi gerekenler. Her maddeyi ayrı satırda yaz.]
 
 YAN ETKİLER:
-[Olası yan etkiler basit dille]
+[Olası yan etkiler basit dille. Her yan etkiyi ayrı satırda yaz.]
 
 İlaç Prospektüsü:
 ${inputText}`,
@@ -94,19 +94,19 @@ ${inputText}`,
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
-        <header className="text-center mb-12">
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <Pill className="w-16 h-16 text-blue-600" strokeWidth={2.5} />
-            <h1 className="text-5xl font-bold text-gray-800">Mediscan AI</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50">
+      <div className="container mx-auto px-6 py-12 max-w-6xl">
+        <header className="text-center mb-16">
+          <div className="flex items-center justify-center gap-6 mb-6">
+            <Pill className="w-20 h-20 text-blue-700" strokeWidth={3} />
+            <h1 className="text-7xl font-extrabold text-gray-900">Mediscan AI</h1>
           </div>
-          <p className="text-2xl text-gray-600">İlaç prospektüslerini kolayca anlayın</p>
+          <p className="text-3xl font-semibold text-gray-700">İlaç prospektüslerini kolayca anlayın</p>
         </header>
 
-        <div className="bg-white rounded-2xl shadow-2xl p-8 mb-8">
-          <div className="mb-6">
-            <label htmlFor="apiKey" className="block text-2xl font-semibold text-gray-700 mb-3">
+        <div className="bg-white rounded-3xl shadow-2xl p-10 mb-10 border-4 border-gray-200">
+          <div className="mb-8">
+            <label htmlFor="apiKey" className="block text-3xl font-bold text-gray-900 mb-4">
               Gemini API Anahtarı
             </label>
             <input
@@ -115,23 +115,23 @@ ${inputText}`,
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="API anahtarınızı buraya girin"
-              className="w-full px-6 py-4 text-xl border-3 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              className="w-full px-8 py-6 text-2xl border-4 border-gray-400 rounded-2xl focus:ring-4 focus:ring-blue-600 focus:border-blue-600 transition-all font-semibold"
             />
-            <p className="mt-2 text-lg text-gray-500">
+            <p className="mt-4 text-xl text-gray-700 font-medium">
               API anahtarı almak için:{' '}
               <a
                 href="https://makersuite.google.com/app/apikey"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 underline hover:text-blue-800"
+                className="text-blue-700 underline hover:text-blue-900 font-bold"
               >
                 Google AI Studio
               </a>
             </p>
           </div>
 
-          <div className="mb-6">
-            <label htmlFor="prospectus" className="block text-2xl font-semibold text-gray-700 mb-3">
+          <div className="mb-8">
+            <label htmlFor="prospectus" className="block text-3xl font-bold text-gray-900 mb-4">
               İlaç Prospektüsü
             </label>
             <textarea
@@ -139,19 +139,19 @@ ${inputText}`,
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="İlaç prospektüsünü buraya yapıştırın..."
-              rows={10}
-              className="w-full px-6 py-4 text-xl border-3 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500 focus:border-blue-500 transition-all resize-none"
+              rows={12}
+              className="w-full px-8 py-6 text-2xl border-4 border-gray-400 rounded-2xl focus:ring-4 focus:ring-blue-600 focus:border-blue-600 transition-all resize-none font-medium leading-relaxed"
             />
           </div>
 
           <button
             onClick={simplifyMedication}
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white text-2xl font-bold py-6 px-8 rounded-xl transition-all transform hover:scale-105 active:scale-95 shadow-lg disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3"
+            className="w-full bg-blue-700 hover:bg-blue-800 disabled:bg-gray-400 text-white text-3xl font-extrabold py-8 px-10 rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-2xl disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-4"
           >
             {loading ? (
               <>
-                <Loader2 className="w-8 h-8 animate-spin" />
+                <Loader2 className="w-10 h-10 animate-spin" />
                 İşleniyor...
               </>
             ) : (
@@ -160,41 +160,41 @@ ${inputText}`,
           </button>
 
           {error && (
-            <div className="mt-6 bg-red-100 border-3 border-red-400 text-red-800 px-6 py-4 rounded-xl flex items-start gap-3">
-              <AlertCircle className="w-8 h-8 flex-shrink-0 mt-1" />
-              <p className="text-xl font-medium">{error}</p>
+            <div className="mt-8 bg-red-100 border-4 border-red-500 text-red-900 px-8 py-6 rounded-2xl flex items-start gap-4">
+              <AlertCircle className="w-10 h-10 flex-shrink-0 mt-1" />
+              <p className="text-2xl font-bold">{error}</p>
             </div>
           )}
         </div>
 
         {result && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-2xl shadow-2xl p-8 border-l-8 border-green-500">
-              <div className="flex items-center gap-3 mb-4">
-                <CheckCircle className="w-10 h-10 text-green-600" />
-                <h2 className="text-3xl font-bold text-gray-800">Nasıl Kullanılır?</h2>
+          <div className="space-y-8">
+            <div className="bg-white rounded-3xl shadow-2xl p-10 border-l-[12px] border-green-600">
+              <div className="flex items-center gap-4 mb-6">
+                <CheckCircle className="w-14 h-14 text-green-700" strokeWidth={3} />
+                <h2 className="text-4xl font-extrabold text-gray-900">Nasıl Kullanılır?</h2>
               </div>
-              <p className="text-xl leading-relaxed text-gray-700 whitespace-pre-wrap">
+              <p className="text-2xl leading-[2.5rem] text-gray-900 whitespace-pre-wrap font-medium">
                 {result.nasil_kullanilir}
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-2xl p-8 border-l-8 border-yellow-500">
-              <div className="flex items-center gap-3 mb-4">
-                <AlertCircle className="w-10 h-10 text-yellow-600" />
-                <h2 className="text-3xl font-bold text-gray-800">Dikkat Edilecekler</h2>
+            <div className="bg-white rounded-3xl shadow-2xl p-10 border-l-[12px] border-yellow-600">
+              <div className="flex items-center gap-4 mb-6">
+                <AlertCircle className="w-14 h-14 text-yellow-700" strokeWidth={3} />
+                <h2 className="text-4xl font-extrabold text-gray-900">Dikkat Edilecekler</h2>
               </div>
-              <p className="text-xl leading-relaxed text-gray-700 whitespace-pre-wrap">
+              <p className="text-2xl leading-[2.5rem] text-gray-900 whitespace-pre-wrap font-medium">
                 {result.dikkat_edilecekler}
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-2xl p-8 border-l-8 border-red-500">
-              <div className="flex items-center gap-3 mb-4">
-                <AlertCircle className="w-10 h-10 text-red-600" />
-                <h2 className="text-3xl font-bold text-gray-800">Yan Etkiler</h2>
+            <div className="bg-white rounded-3xl shadow-2xl p-10 border-l-[12px] border-red-600">
+              <div className="flex items-center gap-4 mb-6">
+                <AlertCircle className="w-14 h-14 text-red-700" strokeWidth={3} />
+                <h2 className="text-4xl font-extrabold text-gray-900">Yan Etkiler</h2>
               </div>
-              <p className="text-xl leading-relaxed text-gray-700 whitespace-pre-wrap">
+              <p className="text-2xl leading-[2.5rem] text-gray-900 whitespace-pre-wrap font-medium">
                 {result.yan_etkiler}
               </p>
             </div>
