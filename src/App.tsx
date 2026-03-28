@@ -64,7 +64,9 @@ ${inputText}`,
       );
 
       if (!response.ok) {
-        throw new Error('API isteği başarısız oldu');
+        const errorData = await response.json();
+        const errorMessage = errorData.error?.message || 'Bilinmeyen hata';
+        throw new Error(`API Hatası (${response.status}): ${errorMessage}`);
       }
 
       const data = await response.json();
@@ -86,7 +88,8 @@ ${inputText}`,
 
       setResult(sections);
     } catch (err) {
-      setError('Bir hata oluştu. Lütfen API anahtarınızı kontrol edin ve tekrar deneyin.');
+      const errorMessage = err instanceof Error ? err.message : 'Bir hata oluştu';
+      setError(errorMessage);
       console.error(err);
     } finally {
       setLoading(false);
