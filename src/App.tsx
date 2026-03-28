@@ -30,46 +30,49 @@ function App() {
     setResult(null);
 
     try {
+      // EN GARANTİ ENDPOINT: v1beta ve gemini-1.5-flash-latest kombinasyonu
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text: `Sen yaşlı bireylere yardımcı olan bir sağlık asistanısın. Aşağıdaki ilaç prospektüsünü yaşlı bireyler için sadeleştir ve anlaşılır hale getir. Yanıtını şu formatta ver:
+            contents: [{
+              parts: [{
+                text: `Sen yaşlı bireylere yardımcı olan bir sağlık asistanısın. Aşağıdaki ilaç prospektüsünü yaşlı bireyler için sadeleştir ve anlaşılır hale getir. Yanıtını MUTLAKA şu başlıklarla ver:
 
 NASIL KULLANILIR:
-[Basit, net talimatlar. Günde kaç kez, ne zaman, yemekle mi açken mi gibi. Her maddeyi ayrı satırda yaz.]
+[Basit talimatlar]
 
 DİKKAT EDİLECEKLER:
-[Önemli uyarılar, kişinin dikkat etmesi gerekenler. Her maddeyi ayrı satırda yaz.]
+[Önemli uyarılar]
 
 YAN ETKİLER:
-[Olası yan etkiler basit dille. Her yan etkiyi ayrı satırda yaz.]
+[Yan etkiler]
 
 İlaç Prospektüsü:
-${inputText}`,
-                  },
-                ],
-              },
-            ],
+${inputText}`
+              }]
+            }]
           }),
         }
       );
 
       if (!response.ok) {
         const errorData = await response.json();
-        const errorMessage = errorData.error?.message || 'Bilinmeyen hata';
-        throw new Error(`API Hatası (${response.status}): ${errorMessage}`);
+        const msg = errorData.error?.message || 'Bilinmeyen hata';
+        // 404 hatasını daha anlaşılır kılmak için:
+        throw new Error(`Google API Hatası (${response.status}): ${msg}`);
       }
 
       const data = await response.json();
+      
+      if (!data.candidates || !data.candidates[0]) {
+        throw new Error('API yanıt vermedi, lütfen tekrar deneyin.');
+      }
+
       const text = data.candidates[0].content.parts[0].text;
 
       const sections = {
@@ -78,131 +81,93 @@ ${inputText}`,
         yan_etkiler: '',
       };
 
-      const nasılMatch = text.match(/NASIL KULLANILIR:([\s\S]*?)(?=DİKKAT EDİLECEKLER:|$)/i);
+      const nasilMatch = text.match(/NASIL KULLANILIR:([\s\S]*?)(?=DİKKAT EDİLECEKLER:|$)/i);
       const dikkatMatch = text.match(/DİKKAT EDİLECEKLER:([\s\S]*?)(?=YAN ETKİLER:|$)/i);
       const yanMatch = text.match(/YAN ETKİLER:([\s\S]*?)$/i);
 
-      sections.nasil_kullanilir = nasılMatch ? nasılMatch[1].trim() : '';
-      sections.dikkat_edilecekler = dikkatMatch ? dikkatMatch[1].trim() : '';
-      sections.yan_etkiler = yanMatch ? yanMatch[1].trim() : '';
+      sections.nasil_kullanilir = nasilMatch ? nasilMatch[1].trim() : 'Bilgi alınamadı.';
+      sections.dikkat_edilecekler = dikkatMatch ? dikkatMatch[1].trim() : 'Bilgi alınamadı.';
+      sections.yan_etkiler = yanMatch ? yanMatch[1].trim() : 'Bilgi alınamadı.';
 
       setResult(sections);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Bir hata oluştu';
-      setError(errorMessage);
-      console.error(err);
+      setError(err instanceof Error ? err.message : 'Bir bağlantı hatası oluştu');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50">
-      <div className="container mx-auto px-6 py-12 max-w-6xl">
-        <header className="text-center mb-16">
-          <div className="flex items-center justify-center gap-6 mb-6">
-            <Pill className="w-20 h-20 text-blue-700" strokeWidth={3} />
-            <h1 className="text-7xl font-extrabold text-gray-900">Mediscan AI</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50 font-sans">
+      <div className="container mx-auto px-6 py-12 max-w-5xl">
+        <header className="text-center mb-12">
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <Pill className="w-16 h-16 text-blue-700" strokeWidth={2.5} />
+            <h1 className="text-6xl font-black text-gray-900 tracking-tight">Mediscan AI</h1>
           </div>
-          <p className="text-3xl font-semibold text-gray-700">İlaç prospektüslerini kolayca anlayın</p>
+          <p className="text-2xl font-bold text-gray-600 italic">Büyüklerimizin Sağlık Rehberi</p>
         </header>
 
-        <div className="bg-white rounded-3xl shadow-2xl p-10 mb-10 border-4 border-gray-200">
+        <div className="bg-white rounded-[40px] shadow-2xl p-10 mb-10 border-8 border-white ring-2 ring-gray-100">
           <div className="mb-8">
-            <label htmlFor="apiKey" className="block text-3xl font-bold text-gray-900 mb-4">
-              Gemini API Anahtarı
-            </label>
+            <label className="block text-2xl font-black text-gray-800 mb-3">1. Gemini API Anahtarı</label>
             <input
-              id="apiKey"
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder="API anahtarınızı buraya girin"
-              className="w-full px-8 py-6 text-2xl border-4 border-gray-400 rounded-2xl focus:ring-4 focus:ring-blue-600 focus:border-blue-600 transition-all font-semibold"
+              placeholder="API anahtarınızı buraya yapıştırın"
+              className="w-full px-6 py-5 text-xl border-4 border-gray-200 rounded-2xl focus:border-blue-500 outline-none transition-all font-bold text-blue-800 bg-gray-50"
             />
-            <p className="mt-4 text-xl text-gray-700 font-medium">
-              API anahtarı almak için:{' '}
-              <a
-                href="https://makersuite.google.com/app/apikey"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-700 underline hover:text-blue-900 font-bold"
-              >
-                Google AI Studio
-              </a>
-            </p>
           </div>
 
           <div className="mb-8">
-            <label htmlFor="prospectus" className="block text-3xl font-bold text-gray-900 mb-4">
-              İlaç Prospektüsü
-            </label>
+            <label className="block text-2xl font-black text-gray-800 mb-3">2. İlaç Prospektüsü</label>
             <textarea
-              id="prospectus"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="İlaç prospektüsünü buraya yapıştırın..."
-              rows={12}
-              className="w-full px-8 py-6 text-2xl border-4 border-gray-400 rounded-2xl focus:ring-4 focus:ring-blue-600 focus:border-blue-600 transition-all resize-none font-medium leading-relaxed"
+              placeholder="İlacın üzerindeki yazıları buraya kopyalayın..."
+              rows={8}
+              className="w-full px-6 py-5 text-xl border-4 border-gray-200 rounded-2xl focus:border-blue-500 outline-none transition-all resize-none font-medium leading-relaxed bg-gray-50"
             />
           </div>
 
           <button
             onClick={simplifyMedication}
             disabled={loading}
-            className="w-full bg-blue-700 hover:bg-blue-800 disabled:bg-gray-400 text-white text-3xl font-extrabold py-8 px-10 rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-2xl disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-4"
+            className="w-full bg-blue-700 hover:bg-blue-800 disabled:bg-gray-400 text-white text-3xl font-black py-7 rounded-3xl transition-all shadow-xl active:scale-95 flex items-center justify-center gap-4"
           >
-            {loading ? (
-              <>
-                <Loader2 className="w-10 h-10 animate-spin" />
-                İşleniyor...
-              </>
-            ) : (
-              'Sadeleştir'
-            )}
+            {loading ? <Loader2 className="w-10 h-10 animate-spin" /> : 'SADELEŞTİR'}
           </button>
 
           {error && (
-            <div className="mt-8 bg-red-100 border-4 border-red-500 text-red-900 px-8 py-6 rounded-2xl flex items-start gap-4">
-              <AlertCircle className="w-10 h-10 flex-shrink-0 mt-1" />
-              <p className="text-2xl font-bold">{error}</p>
+            <div className="mt-8 bg-red-50 border-4 border-red-500 text-red-700 px-6 py-5 rounded-2xl flex items-center gap-4">
+              <AlertCircle className="w-8 h-8 flex-shrink-0" />
+              <p className="text-xl font-black uppercase tracking-wide leading-tight">{error}</p>
             </div>
           )}
         </div>
 
         {result && (
-          <div className="space-y-8">
-            <div className="bg-white rounded-3xl shadow-2xl p-10 border-l-[12px] border-green-600">
-              <div className="flex items-center gap-4 mb-6">
-                <CheckCircle className="w-14 h-14 text-green-700" strokeWidth={3} />
-                <h2 className="text-4xl font-extrabold text-gray-900">Nasıl Kullanılır?</h2>
-              </div>
-              <p className="text-2xl leading-[2.5rem] text-gray-900 whitespace-pre-wrap font-medium">
-                {result.nasil_kullanilir}
-              </p>
-            </div>
-
-            <div className="bg-white rounded-3xl shadow-2xl p-10 border-l-[12px] border-yellow-600">
-              <div className="flex items-center gap-4 mb-6">
-                <AlertCircle className="w-14 h-14 text-yellow-700" strokeWidth={3} />
-                <h2 className="text-4xl font-extrabold text-gray-900">Dikkat Edilecekler</h2>
-              </div>
-              <p className="text-2xl leading-[2.5rem] text-gray-900 whitespace-pre-wrap font-medium">
-                {result.dikkat_edilecekler}
-              </p>
-            </div>
-
-            <div className="bg-white rounded-3xl shadow-2xl p-10 border-l-[12px] border-red-600">
-              <div className="flex items-center gap-4 mb-6">
-                <AlertCircle className="w-14 h-14 text-red-700" strokeWidth={3} />
-                <h2 className="text-4xl font-extrabold text-gray-900">Yan Etkiler</h2>
-              </div>
-              <p className="text-2xl leading-[2.5rem] text-gray-900 whitespace-pre-wrap font-medium">
-                {result.yan_etkiler}
-              </p>
-            </div>
+          <div className="grid gap-8 animate-in fade-in slide-in-from-bottom-4">
+            <Section icon={<CheckCircle className="text-green-600 w-12 h-12" />} title="Nasıl Kullanılır?" content={result.nasil_kullanilir} borderColor="border-green-500" />
+            <Section icon={<AlertCircle className="text-orange-600 w-12 h-12" />} title="Dikkat Edilecekler" content={result.dikkat_edilecekler} borderColor="border-orange-500" />
+            <Section icon={<AlertCircle className="text-red-600 w-12 h-12" />} title="Yan Etkiler" content={result.yan_etkiler} borderColor="border-red-500" />
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function Section({ icon, title, content, borderColor }: any) {
+  return (
+    <div className={`bg-white rounded-[35px] shadow-xl p-8 border-t-[15px] ${borderColor}`}>
+      <div className="flex items-center gap-4 mb-4">
+        {icon}
+        <h2 className="text-3xl font-black text-gray-900">{title}</h2>
+      </div>
+      <div className="text-2xl leading-relaxed text-gray-800 font-bold whitespace-pre-wrap pl-2 border-l-4 border-gray-100">
+        {content}
       </div>
     </div>
   );
