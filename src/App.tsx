@@ -32,7 +32,7 @@ function App() {
     try {
       // EN GARANTİ ENDPOINT: v1beta ve gemini-1.5-flash-latest kombinasyonu
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: {
