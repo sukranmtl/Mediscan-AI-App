@@ -30,18 +30,22 @@ function App() {
     setResult(null);
 
     try {
-      // EN GARANTİ ENDPOINT: v1beta ve gemini-1.5-flash-latest kombinasyonu
+      const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey.substring(0, 8)}***`;
+      console.log('API Çağrısı:', apiUrl);
+
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: `Sen yaşlı bireylere yardımcı olan bir sağlık asistanısın. Aşağıdaki ilaç prospektüsünü yaşlı bireyler için sadeleştir ve anlaşılır hale getir. Yanıtını MUTLAKA şu başlıklarla ver:
+            contents: [
+              {
+                parts: [
+                  {
+                    text: `Sen yaşlı bireylere yardımcı olan bir sağlık asistanısın. Aşağıdaki ilaç prospektüsünü yaşlı bireyler için sadeleştir ve anlaşılır hale getir. Yanıtını MUTLAKA şu başlıklarla ver:
 
 NASIL KULLANILIR:
 [Basit talimatlar]
@@ -53,9 +57,11 @@ YAN ETKİLER:
 [Yan etkiler]
 
 İlaç Prospektüsü:
-${inputText}`
-              }]
-            }]
+${inputText}`,
+                  },
+                ],
+              },
+            ],
           }),
         }
       );
@@ -63,12 +69,11 @@ ${inputText}`
       if (!response.ok) {
         const errorData = await response.json();
         const msg = errorData.error?.message || 'Bilinmeyen hata';
-        // 404 hatasını daha anlaşılır kılmak için:
         throw new Error(`Google API Hatası (${response.status}): ${msg}`);
       }
 
       const data = await response.json();
-      
+
       if (!data.candidates || !data.candidates[0]) {
         throw new Error('API yanıt vermedi, lütfen tekrar deneyin.');
       }
